@@ -55,14 +55,23 @@ fn main() -> Result<(), Error> {
         Ok(())
     })?;
 
+    let two_hundred_millis = time::Duration::from_millis(500);
     let five_hundred_millis = time::Duration::from_millis(500);
 
+    fn print_and_run(s: &mut impl Write, b: &[u8]) {
+        println!("{:02x?}", b);
+        s.write_all(b);
+    }
 
-    s.write_all(driver.rotate(mks_servo42::direction::Direction::Forward, 100)?)?;
-    thread::sleep(five_hundred_millis);
-    s.write_all(driver.stop()?)?;
-    thread::sleep(five_hundred_millis);
-    s.write_all(driver.rotate_to(mks_servo42::direction::Direction::Forward, 100, 0x320)?)?;
+    print_and_run(&mut s, driver.rotate_to(mks_servo42::direction::Direction::Reverse, 15, 0x0640)?);
+    for _ in 0..4 {
+        thread::sleep(five_hundred_millis);
+    }
+    print_and_run(&mut s, driver.set_zero_speed(0x01)?);
+    thread::sleep(two_hundred_millis);
+    print_and_run(&mut s, driver.zero()?);
+    // thread::sleep(two_hundred_millis);
+    // print_and_run(&mut s, driver.rotate_to(mks_servo42::direction::Direction::Reverse, 15, 0x06400000)?);
 
 
     Ok(())
