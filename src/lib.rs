@@ -1,5 +1,7 @@
 #![no_std]
 
+mod response;
+
 #[derive(Default)]
 pub struct Driver {
     // Address: we'll default to e0
