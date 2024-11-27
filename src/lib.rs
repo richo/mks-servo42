@@ -35,6 +35,8 @@ impl Driver {
         }
     }
 
+    // TODO(richo) This speed param is everywhere we should make a constructor that refuses to do
+    // the wrong thing.
     /// Start the motor rotating.
     ///
     /// It will continue doing this until stopped. Direction is relative to the configured
@@ -42,7 +44,7 @@ impl Driver {
     ///
     /// Speed is a value between 0 and 0x80. The values can be calculated with more infomration
     /// about how the motor is configured but that's not implemented.
-    pub fn rotate<'a>(&'a mut self, direction: direction::Direction, speed: u8) -> Result<&'a mut [u8]> {
+    pub fn rotate<'a>(&'a mut self, direction: direction::Direction, speed: u8) -> Result<&'a [u8]> {
         if speed > 0x80 {
             return Err(Error::InvalidValue);
         }
@@ -51,17 +53,40 @@ impl Driver {
     }
 
     /// Stop the motor.
-    pub fn stop<'a>(&'a mut self) -> Result<&'a mut [u8]> {
-        Ok(self.set_bytes(&[self.address, 0xf7]))
+    pub fn stop<'a>(&'a mut self) -> Result<&'a [u8]> {
+        Ok(self.set_bytes(&mut [self.address, 0xf7]))
+    }
+
+    pub fn rotate_to<'a>(&'a mut self, direction: direction::Direction, speed: u8, value: u32) -> Result<&'a [u8]> {
+        if speed > 0x80 {
+            return Err(Error::InvalidValue);
+        }
+
+        // I'll figure out some fancy pants way to do this later
+        Ok(self.set_bytes(&[self.address, 0xfd, speed | direction as u8,
+                ((value & 0xff000000) >> 24) as u8,
+                ((value & 0x00ff0000) >> 16) as u8,
+                ((value & 0x0000ff00) >> 8) as u8,
+                ((value & 0x000000ff) >> 0) as u8]))
+
+    }
+
+    pub fn zero<'a>(&'a mut self) -> Result<&'a [u8]> {
+        Ok(self.set_bytes(&[self.address, 0x94, 0x00]))
+    }
+
+    // TODO(richo) this u8 is a lie
+    pub fn set_zero_speed<'a>(&'a mut self, speed: u8) -> Result<&'a [u8]> {
+        Ok(self.set_bytes(&[self.address, 0x92, speed]))
     }
 
     /// Setup these bytes in the internal buffer, build the checksum, and then return the correct
     /// slice.
-    fn set_bytes(&mut self, cmd: &[u8]) -> &mut [u8] {
+    fn set_bytes(&mut self, cmd: &[u8]) -> &[u8] {
         let len = cmd.len();
         self.bytes[..len].clone_from_slice(&cmd);
         self.bytes[len] = checksum(&cmd);
-        &mut self.bytes[..len+1]
+        &self.bytes[..len+1]
     }
 }
 

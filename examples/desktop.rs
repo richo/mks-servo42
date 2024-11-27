@@ -9,6 +9,8 @@ use std::io::{
     Error as IoError,
     Write,
 };
+use std::thread;
+use std::time;
 
 enum Error {
     Servo(mks_servo42::Error),
@@ -53,7 +55,15 @@ fn main() -> Result<(), Error> {
         Ok(())
     })?;
 
+    let five_hundred_millis = time::Duration::from_millis(500);
+
+
     s.write_all(driver.rotate(mks_servo42::direction::Direction::Forward, 100)?)?;
+    thread::sleep(five_hundred_millis);
+    s.write_all(driver.stop()?)?;
+    thread::sleep(five_hundred_millis);
+    s.write_all(driver.rotate_to(mks_servo42::direction::Direction::Forward, 100, 0x320)?)?;
+
 
     Ok(())
 }
