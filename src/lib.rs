@@ -35,18 +35,33 @@ impl Driver {
         }
     }
 
+    /// Start the motor rotating.
+    ///
+    /// It will continue doing this until stopped. Direction is relative to the configured
+    /// direction in the motor.
+    ///
+    /// Speed is a value between 0 and 0x80. The values can be calculated with more infomration
+    /// about how the motor is configured but that's not implemented.
     pub fn rotate<'a>(&'a mut self, direction: direction::Direction, speed: u8) -> Result<&'a mut [u8]> {
         if speed > 0x80 {
             return Err(Error::InvalidValue);
         }
 
-        // For now we'll just build it up by hand because we're being silly
-        let cmd = [self.address, 0xf6, speed & direction as u8];
+        Ok(self.set_bytes(&[self.address, 0xf6, speed & direction as u8]))
+    }
+
+    /// Stop the motor.
+    pub fn stop<'a>(&'a mut self) -> Result<&'a mut [u8]> {
+        Ok(self.set_bytes(&[self.address, 0xf7]))
+    }
+
+    /// Setup these bytes in the internal buffer, build the checksum, and then return the correct
+    /// slice.
+    fn set_bytes(&mut self, cmd: &[u8]) -> &mut [u8] {
         let len = cmd.len();
         self.bytes[..len].clone_from_slice(&cmd);
         self.bytes[len] = checksum(&cmd);
-
-        Ok(&mut self.bytes[..len+1])
+        &mut self.bytes[..len+1]
     }
 }
 
