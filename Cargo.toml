@@ -6,6 +6,7 @@ license = "MIT OR Apache-2.0"
 description = "A no_std library for encoding commands to a mks_servo motor"
 
 repository = "https://github.com/richo/mks-servo42"
+documentation = "https://docs.rs/mks-servo42/latest/mks_servo42/"
 
 
 [dev-dependencies]
