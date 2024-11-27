@@ -6,8 +6,10 @@ mod errors;
 
 pub use errors::Error;
 
-
-
+/// The core object in the API. Represents a single motor.
+///
+/// Has a Default impl which uses the default address, but if you want to stack them on a bus you
+/// should use `with_id`.
 pub struct Driver {
     address: u8,
     bytes: [u8; 8], // This is our buffer that we're going to load out with commands in it
@@ -25,6 +27,14 @@ impl Default for Driver {
 }
 
 impl Driver {
+    /// Create a driver with a different ID.
+    pub fn with_id(address: u8) -> Self {
+        Driver {
+            address,
+            .. Default::default()
+        }
+    }
+
     pub fn rotate<'a>(&'a mut self, direction: direction::Direction, speed: u8) -> Result<&'a mut [u8]> {
         if speed > 0x80 {
             return Err(Error::InvalidValue);
