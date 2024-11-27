@@ -49,7 +49,7 @@ impl Driver {
             return Err(Error::InvalidValue);
         }
 
-        Ok(self.set_bytes(&[self.address, 0xf6, speed & direction as u8]))
+        Ok(self.set_bytes(&[self.address, 0xf6, speed | direction as u8]))
     }
 
     /// Stop the motor.
