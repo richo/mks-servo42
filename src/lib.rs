@@ -26,6 +26,31 @@ impl Default for Driver {
     }
 }
 
+#[repr(C)]
+#[derive(Debug)]
+pub struct UartResponse<T> {
+    address: u8,
+    inner: T,
+    checksum: u8,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct CalResponse {
+    status: u8,
+}
+pub type CalibrationResponse = UartResponse<CalResponse>;
+
+#[repr(u8)]
+#[derive(Debug)]
+pub enum EnPin {
+    ActiveLow = 0,
+    ActiveHigh = 1,
+    ActiveAlways = 2,
+}
+
+
+
 impl Driver {
     /// Create a driver with a different ID.
     pub fn with_id(address: u8) -> Self {
@@ -80,6 +105,18 @@ impl Driver {
         Ok(self.set_bytes(&[self.address, 0x92, speed]))
     }
 
+    pub fn set_en_pin<'a>(&'a mut self, en: EnPin) -> Result<&'a [u8]> {
+        Ok(self.set_bytes(&[self.address, 0x85, en as u8]))
+    }
+
+    pub fn get_position(&mut self) -> &[u8] {
+        unimplemented!();
+    }
+
+    pub fn calibrate(&mut self) -> Result<&[u8]> {
+        Ok(self.set_bytes(&mut [self.address, 0x80, 0x00]))
+    }
+
     /// Setup these bytes in the internal buffer, build the checksum, and then return the correct
     /// slice.
     fn set_bytes(&mut self, cmd: &[u8]) -> &[u8] {
@@ -88,6 +125,11 @@ impl Driver {
         self.bytes[len] = checksum(&cmd);
         &self.bytes[..len+1]
     }
+
+    fn get_bytes(&mut self, cmd: &[u8]) -> &[u8] {
+        unimplemented!()
+    }
+
 }
 
 fn checksum(bytes: &[u8]) -> u8 {

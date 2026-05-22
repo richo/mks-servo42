@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 /// This is a mask to be applied to a speed
 pub enum Direction {
     Forward = 0x80,
