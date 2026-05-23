@@ -105,8 +105,16 @@ impl Driver {
         Ok(self.set_bytes(&[self.address, 0x92, speed]))
     }
 
-    pub fn set_en_pin<'a>(&'a mut self, en: EnPin) -> Result<&'a [u8]> {
-        Ok(self.set_bytes(&[self.address, 0x85, en as u8]))
+    pub fn set_en_pin<'a>(&'a mut self, en: bool) -> Result<&'a [u8]> {
+        let value = match en {
+            true => 0x01,
+            false => 0x00,
+        };
+        Ok(self.set_bytes(&[self.address, 0xf3, value]))
+    }
+
+    pub fn set_en_pin_active<'a>(&'a mut self, en: EnPin) -> Result<&'a [u8]> {
+        Ok(self.set_bytes(&[self.address, 0xf3, en as u8]))
     }
 
     pub fn get_position(&mut self) -> &[u8] {
